@@ -1,129 +1,69 @@
 from flask import Flask, render_template
-
-# importing required modules 
-from PIL import Image 
-import pytesseract 
-import sys 
-from pdf2image import convert_from_path 
-import os 
+from pdf2image import convert_from_path, convert_from_bytes
+import os
+from PIL import Image
+import pytesseract
 
 app = Flask(__name__)
-    # creating a pdf file object 
 
-@app.route("/file")
+@app.route("/")
+
 def hello():
-    # Path of the pdf 
-    PDF_file = "new.pdf"
-    pages = convert_from_path(PDF_file, 500) 
-    image_counter = 1
-    for page in pages:
-        filename = "page_"+str(image_counter)+".jpg"
-        page.save(filename, 'JPEG') 
-        image_counter = image_counter + 1
-    
-    filelimit = image_counter-1
-    outfile = "out_text.txt"
-    f = open(outfile, "w+")
-    for i in range(1, filelimit + 1):
-         filename = "page_"+str(i)+".jpg"
-         text = str(((pytesseract.image_to_string(Image.open(filename)))))
-         text = text.replace('-\n', '')
-         f.write(text) 
-    result=f.read()
-    print(f.read())
-    f.close()
-    return render_template('home.html',result=result)
+	cwd = os.getcwd()
+	input_path = cwd +"/PDF/"
+	destination_path = cwd +"/PPM/"
+	image_save_path = cwd +"/PPM 2 JPG/"
+	image_output_path = cwd + "/OCR/"
+	result=""
 
-             
-        
+	def conversion(input_files):
+		
+		p=""
+		for x in input_files:
+			dest_file = input_path + x
+			dest_path = destination_path + x + '/'
+			if not os.path.isdir(dest_path):
+				os.makedirs(dest_path)
+			images_from_path = convert_from_path(dest_file, output_folder=dest_path)
 
-          
+		for x in input_files:
+			dest_path = destination_path + x + '/'
+			txt_files = [f for f in os.listdir(dest_path) if f.endswith('.ppm')]
+			# print(txt_files)
+			counter = 0
+			for txt_file in txt_files:
+				image = Image.open(dest_path + txt_file)
+				image_input_path = image_save_path + x + '/'
+				if not os.path.isdir(image_input_path):
+					os.makedirs(image_input_path)
+				image.save(image_input_path + str(counter) + ".jpg")
+				counter += 1
+		
+		for x in input_files:
+			counter = 0
+			dest_path = image_save_path + x + '/'
+			ocr_files = [f for f in os.listdir(dest_path)]
+			for ocr_file in ocr_files:
+				p+=str(pytesseract.image_to_string(Image.open(dest_path + ocr_file)))
+				ocr_input_path = image_output_path + x + '/'
+				if not os.path.isdir(ocr_input_path):
+					os.makedirs(ocr_input_path)
+				f = open (ocr_input_path + x +".txt","w+")
+				f.write(p)
+		
+	input_files = [f for f in os.listdir(input_path) if f.endswith('.pdf')]
+	if len(input_files)>0:
+		conversion(input_files)
+	else:
+		print("There are no input PDF files. Please paste some files in PDF Folder")
 
+	f = open("C://Users/ak0c82291/Envs/pdfex/OCR/myPDF.pdf/myPDF.pdf.txt","r+")
+	f1 = f.readlines()
 
-  
-    
-  
-  
-  
-''' 
-Part #1 : Converting PDF to images 
-'''
-  
-# Store all the pages of the PDF in a variable 
-
-# Counter to store images of each page of PDF to image 
-    
-# Iterate through all the pages stored above 
-    
-  
-        # Declaring filename for each page of PDF as JPG 
-    # For each page, filename will be: 
-    # PDF page 1 -> page_1.jpg 
-    # PDF page 2 -> page_2.jpg 
-    # PDF page 3 -> page_3.jpg 
-    # .... 
-    # PDF page n -> page_n.jpg 
-        
-      
-    # Save the image of the page in system 
-        
-    # Increment the counter to update filename 
-       
-  
-''' 
-Part #2 - Recognizing text from the images using OCR 
-'''
-    
-# Variable to get count of total number of pages 
-    
-  
-# Creating a text file to write the output 
-    
-  
-# Open the file in append mode so that  
-# All contents of all images are added to the same file 
-    
-  
-# Iterate from 1 to total number of pages 
-    
-  
-        # Set filename to recognize text from 
-    # Again, these files will be: 
-    # page_1.jpg 
-    # page_2.jpg 
-    # .... 
-    # page_n.jpg 
-       
-    # Recognize the text as string in image using pytesserct 
-     
-  
-    # The recognized text is stored in variable text 
-    # Any string processing may be applied on text 
-    # Here, basic formatting has been done: 
-    # In many PDFs, at line ending, if a word can't 
-    # be written fully, a 'hyphen' is added. 
-    # The rest of the word is written in the next line 
-    # Eg: This is a sample text this word here GeeksF- 
-    # orGeeks is half on first line, remaining on next. 
-    # To remove this, we replace every '-\n' to ''. 
-         
-  
-    # Finally, write the processed text to the file. 
-    
-  
-# Close the file after writing all the text. 
-
-  
-    
-  
-  
-  
-    
- 
-
+	return render_template("home1.html", f1 = f1 )
 
 
 
 if __name__ == "__main__":
-       app.run(debug=1)
- 
+
+	   app.run(debug=1)
