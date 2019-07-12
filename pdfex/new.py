@@ -16,7 +16,7 @@ import pymysql
 
 app = Flask(__name__)
 
-@app.route("/U")
+@app.route("/")
 
 def hello():
 	cwd = os.getcwd()
@@ -25,7 +25,7 @@ def hello():
 	image_save_path = cwd +"/PPM 2 JPG/"
 	image_output_path = cwd + "/OCR/"
 	result=""
-	p=""
+	
 	def conversion(input_files):
 		
 		for x in input_files:
@@ -48,7 +48,7 @@ def hello():
 				counter += 1
 		
 		for x in input_files:
-			
+			p=""
 			counter = 0
 			dest_path = image_save_path + x + '/'
 			ocr_files = [f for f in os.listdir(dest_path)]
@@ -60,7 +60,8 @@ def hello():
 			f = open (ocr_input_path + x +".txt","w+")
 			f.write(p)
 			counter += 1
-			f1=f.readlines()
+			with open(ocr_input_path + x +".txt",'r') as myfile:
+				data = myfile.read()
 
 		
 		
@@ -69,10 +70,8 @@ def hello():
 		conversion(input_files)
 	else:
 		print("There are no input PDF files. Please paste some files in PDF Folder")
-	return render_template("home1.html",f=f1)
-
-
-
+	print(p)
+	return 
 if __name__ == "__main__":
 
        app.run(debug=1)
